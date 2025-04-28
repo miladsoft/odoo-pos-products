@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <!-- Update title to English -->
-    <title>POS Categories and Products</title>
+    <title>Al Basrah Restaurant Menu</title> <!-- Changed Title -->
     <!-- Import Vazirmatn font -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -13,79 +13,169 @@
             font-family: 'Vazirmatn', Arial, sans-serif;
             background: #f9f9f9;
             margin: 0;
-            padding: 20px;
+            padding: 0 0 20px 0; /* Remove top/side padding, keep bottom */
              /* Set text direction back to default LTR */
             direction: ltr;
         }
-        h1, h2 {
+        .container { /* Add a container for padding */
+            padding: 0 20px;
+        }
+        h1 { /* Style the main title */
             text-align: center;
             color: #333;
+            background-color: white;
+            padding: 20px;
+            margin: 0 0 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .categories, .products {
-            display: grid;
-            /* Adjust minmax for potentially wider text */
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+        h2 { /* Style the Products section title */
+             text-align: center;
+             color: #555;
+             margin-top: 30px;
+             margin-bottom: 15px;
+             font-size: 1.5em;
         }
-        .item {
+        #selected-category-title { /* Style for the dynamic category title */
+            text-align: center;
+            color: #27ae60;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        /* --- Category Styling --- */
+        .categories {
+            display: flex; /* Horizontal layout */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            padding: 10px 20px; /* Padding around categories */
+            gap: 20px; /* Space between circles */
+            margin-top: 0;
+            background-color: white; /* Background for the scroll area */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+            /* Hide scrollbar */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .categories::-webkit-scrollbar { /* Hide scrollbar for Chrome, Safari, Opera */
+            display: none;
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column; /* Stack image and text vertically */
+            align-items: center; /* Center items horizontally */
+            text-align: center;
+            cursor: pointer;
+            flex-shrink: 0; /* Prevent items from shrinking */
+            width: 80px; /* Fixed width for consistency */
+            transition: transform 0.2s ease-in-out;
+            background: none; /* Remove item background */
+            border: none; /* Remove item border */
+            box-shadow: none; /* Remove item shadow */
+            padding: 0; /* Remove item padding */
+            border-radius: 0; /* Remove item border-radius */
+        }
+        .category-item img {
+            width: 65px; /* Size of the circle */
+            height: 65px;
+            object-fit: cover;
+            border-radius: 50%; /* Make image circular */
+            margin-bottom: 8px;
+            border: 3px solid transparent; /* Border for active state */
+            transition: border-color 0.2s ease-in-out;
+        }
+         .category-item div { /* Style for category name */
+            font-size: 0.9em;
+            color: #555;
+            white-space: nowrap; /* Prevent name wrapping */
+        }
+
+        .category-item:hover img {
+             border-color: #ddd; /* Subtle hover border */
+        }
+        .category-item.active img { /* Style for the selected category */
+            border-color: #27ae60; /* Green border for active */
+        }
+         .category-item.active div {
+             color: #27ae60;
+             font-weight: bold;
+         }
+
+        /* --- Product Styling --- */
+        .products {
+            display: block; /* Change from grid to block for list */
+            margin-top: 10px; /* Reduced top margin */
+            gap: 0; /* Remove grid gap */
+        }
+        .product-item { /* New class for product list items */
             background: white;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Slightly enhanced shadow */
-            text-align: center;
-            padding: 15px; /* Increased padding */
-            overflow: hidden;
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transition */
-            border: 1px solid #eee; /* Subtle border */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px;
+            margin-bottom: 15px; /* Space between product rows */
+            display: flex; /* Use flex for row layout */
+            align-items: center; /* Vertically align items */
+            transition: box-shadow 0.2s ease-in-out;
+            border: 1px solid #eee;
         }
-        .category-item { /* Specific class for categories */
-             cursor: pointer; /* Indicate clickable */
+        .product-item:hover {
+             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
-        .category-item:hover {
-            transform: translateY(-3px); /* Lift effect on hover */
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-        }
-        .category-item.active { /* Style for the selected category */
-            border-color: #27ae60;
-            box-shadow: 0 6px 16px rgba(40, 174, 96, 0.3);
-            transform: translateY(-2px);
-        }
-        .item img {
-            width: 100px;
-            height: 100px;
+
+        .product-item img {
+            width: 90px; /* Adjust image size */
+            height: 90px;
             object-fit: cover;
-            margin-bottom: 10px;
-            border-radius: 8px; /* Match item radius */
-            border: 1px solid #eee; /* Border for images */
+            border-radius: 8px;
+            margin-left: 15px; /* Space between image and text (since LTR) */
+            border: 1px solid #eee;
+            flex-shrink: 0; /* Prevent image shrinking */
         }
-        .price {
+        .product-details { /* Container for name and price */
+            flex-grow: 1; /* Allow text to take remaining space */
+            text-align: left; /* Align text to the left */
+        }
+        .product-details div:first-child { /* Product name */
             font-weight: bold;
-            color: #27ae60; /* Keep green color */
-            margin-top: 8px; /* Adjusted margin */
-            font-size: 1.1em; /* Slightly larger price */
-            /* Ensure price direction is LTR if needed, though currency formatting should handle it */
-            direction: ltr;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
         }
-        /* Basic loading indicator style */
+        .price { /* Price styling */
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.05em;
+            direction: ltr; /* Ensure price format is LTR */
+        }
+
+        /* --- Loading Indicator --- */
         .loading-indicator {
             text-align: center;
             font-size: 1.2em;
             color: #555;
-            padding: 40px 0;
+            padding: 40px 20px; /* Add horizontal padding */
+            background: none; /* Remove background if set previously */
+            box-shadow: none; /* Remove shadow if set previously */
         }
     </style>
 </head>
 <body>
 
-<!-- Update heading to English -->
-<h1>POS Categories</h1>
-<!-- Update loading message to English -->
+<!-- Use H1 for the main restaurant title -->
+<h1>Al Basrah Restaurant Menu</h1>
+
+<!-- Categories Section -->
 <div id="categories" class="categories loading-indicator">Loading categories...</div>
 
-<!-- Update heading to English -->
-<h2>POS Products</h2>
-<!-- Update loading message to English -->
-<div id="products" class="products loading-indicator">Loading products...</div>
+<!-- Container for dynamic title and products -->
+<div class="container">
+    <!-- Title for selected category -->
+    <h3 id="selected-category-title">All Products</h3>
+
+    <!-- Products Section -->
+    <div id="products" class="products loading-indicator">Loading products...</div>
+</div>
 
 <script>
 // Store data globally
@@ -96,12 +186,14 @@ let activeCategoryId = 'all'; // Keep track of the selected category
 // Get container elements once
 const categoriesContainer = document.getElementById('categories');
 const productsContainer = document.getElementById('products');
+const selectedCategoryTitle = document.getElementById('selected-category-title'); // Get title element
 
 async function fetchPOSData() {
     try {
         // Show loading indicators in English
-        categoriesContainer.innerHTML = '<div class="loading-indicator">Loading categories...</div>';
+        categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Loading categories...</div>'; // Adjust loading style
         productsContainer.innerHTML = '<div class="loading-indicator">Please select a category or wait...</div>'; // Initial product message in English
+        selectedCategoryTitle.textContent = ''; // Clear title initially
 
         const response = await fetch('/.netlify/functions/proxy');
 
@@ -127,11 +219,13 @@ async function fetchPOSData() {
     } catch (error) {
         console.error('Failed to fetch or process POS data:', error);
         // Update error messages to English
-        categoriesContainer.innerHTML = '<div class="loading-indicator">Error loading categories.</div>';
+        categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Error loading categories.</div>';
         productsContainer.innerHTML = '<div class="loading-indicator">Error loading products.</div>';
+        selectedCategoryTitle.textContent = 'Error';
     }
 }
 
+// ... extractCategories and extractProducts functions remain the same ...
 function extractCategories(data) {
     const categories = [];
     if (data?.result?.['pos.category']) {
@@ -175,6 +269,7 @@ function extractProducts(data) {
     return products;
 }
 
+
 function renderCategories(categories) {
     if (!categoriesContainer) return;
     categoriesContainer.innerHTML = ''; // Clear loading message
@@ -182,10 +277,11 @@ function renderCategories(categories) {
 
     // Add "All" category item in English
     const allDiv = document.createElement('div');
-    allDiv.className = 'item category-item'; // Add category-item class
+    // Use category-item class for styling
+    allDiv.className = 'category-item';
     allDiv.innerHTML = `
         <img src="https://via.placeholder.com/100?text=All" alt="All" loading="lazy">
-        <div>All Categories</div>
+        <div>All</div>
     `;
     allDiv.dataset.categoryId = 'all'; // Use data attribute
     allDiv.addEventListener('click', () => filterAndRenderProducts('all'));
@@ -193,17 +289,18 @@ function renderCategories(categories) {
 
     if (categories.length === 0 && categoriesContainer.children.length === 1) { // Only "All" exists
          // Update "not found" message to English
-         categoriesContainer.innerHTML = '<div class="loading-indicator">No categories found.</div>'; // Keep loading style for message
+         categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">No categories found.</div>'; // Keep loading style for message
          return;
     }
 
 
     for (const cat of categories) {
         const div = document.createElement('div');
-        div.className = 'item category-item'; // Add category-item class
+        // Use category-item class for styling
+        div.className = 'category-item';
         div.dataset.categoryId = cat.id; // Use data attribute
         div.innerHTML = `
-            <img src="${cat.image_url}" alt="${cat.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/100?text=No+Image';">
+            <img src="${cat.image_url}" alt="${cat.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/65/eee/ccc?text=N/A'; this.style.border='1px solid #eee';">
             <div>${cat.name}</div>
         `;
         // Add click listener
@@ -218,6 +315,16 @@ function renderCategories(categories) {
 function filterAndRenderProducts(categoryId) {
     activeCategoryId = categoryId; // Update the active category ID
     updateActiveCategoryVisuals(); // Update the visual selection
+
+    // Update the selected category title
+    if (selectedCategoryTitle) {
+        if (categoryId === 'all') {
+            selectedCategoryTitle.textContent = 'All Products';
+        } else {
+            const selectedCat = allCategories.find(cat => cat.id == categoryId); // Use == for potential type difference
+            selectedCategoryTitle.textContent = selectedCat ? selectedCat.name : 'Products';
+        }
+    }
 
     let filteredProducts = [];
     if (categoryId === 'all') {
@@ -242,6 +349,8 @@ function updateActiveCategoryVisuals() {
     const activeItem = categoriesContainer.querySelector(`.category-item[data-category-id="${activeCategoryId}"]`);
     if (activeItem) {
         activeItem.classList.add('active');
+        // Optional: Scroll the active item into view
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 }
 
@@ -260,16 +369,16 @@ function renderProducts(products) {
 
     for (const prod of products) {
         const div = document.createElement('div');
-        div.className = 'item'; // Product items don't need category-item class
-        // Changed $ to OMR and use locale string for potential formatting
+        // Use the new product-item class
+        div.className = 'product-item';
+        // Structure for image on right, details on left
         div.innerHTML = `
-            <img src="${prod.image_url}" alt="${prod.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/100?text=No+Image';">
-            <div>${prod.name}</div>
-            <div class="price">${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
+            <div class="product-details">
+                <div>${prod.name}</div>
+                <div class="price">${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
+            </div>
+            <img src="${prod.image_url}" alt="${prod.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/90/eee/ccc?text=N/A'; this.style.border='1px solid #eee';">
         `;
-        // Note: OMR typically uses 3 decimal places. Adjusted toLocaleString.
-        // If you prefer exactly "OMR 10.000", you might need custom formatting:
-        // <div class="price">OMR ${prod.price.toFixed(3)}</div>
         productsContainer.appendChild(div);
     }
 }
