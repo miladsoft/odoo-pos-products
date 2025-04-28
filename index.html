@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Odoo POS Products Fetcher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .category {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .product {
+      margin: 5px 0;
+      padding: 8px;
+      background: #e8e8e8;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Odoo POS - Products and Categories</h1>
+
+<div id="content">Loading...</div>
+
+<script>
+async function fetchOdooPOS() {
+    try {
+        const response = await fetch('https://albasrah.odoo.com/pos-self/data/1', {
+            method: 'POST', // مهم: POST باشه
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // مهم: کوکی‌ها رو هم بفرست
+            body: JSON.stringify({}) // بدنه خالی
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok.');
+        }
+
+        const jsonData = await response.json();
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = '';
+
+        const categories = {};
+        const products = [];
+
+        // ساخت دیکشنری دسته‌بندی‌ها
+        jsonData['pos.categories'].forEach(category => {
+            categories[category.id] = category.name;
+        });
+
+        // ساخت لیست محصولات
+        jsonData['products'].forEach(product => {
+            products.push({
+                id: product.id,
+                name: product.display_name,
+                price: product.lst_price,
+                categoryId: product.pos_categ_id ? product.pos_categ_id[0] : null,
+            });
+        });
+
+        // حالا محصولات رو دسته‌بندی شده نمایش بده
+        for (const [catId, catName] of Object.entries(categories)) {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category';
+            catDiv.innerHTML = `<h2>${catName}</h2>`;
+
+            products
+                .filter(p => p.categoryId == catId)
+                .forEach(p => {
+                    const prodDiv = document.createElement('div');
+                    prodDiv.className = 'product';
+                    prodDiv.innerText = `${p.name} - $${p.price}`;
+                    catDiv.appendChild(prodDiv);
+                });
+
+            contentDiv.appendChild(catDiv);
+        }
+
+    } catch (error) {
+        console.error('Failed to fetch POS products:', error);
+        document.getElementById('content').innerText = 'Failed to load products.';
+    }
+}
+
+// شروع
+fetchOdooPOS();
+</script>
+
+</body>
+</html>
