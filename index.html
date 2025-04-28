@@ -51,7 +51,7 @@
             display: flex; /* Horizontal layout */
             overflow-x: auto; /* Enable horizontal scrolling */
             padding: 15px 25px; /* Adjusted padding */
-            gap: 40px; /* Further Increased space between circles */
+            /* gap: 40px; */ /* Keep or adjust gap as needed */
             margin-top: 0;
             background-color: white; /* Background for the scroll area */
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
@@ -64,7 +64,7 @@
             text-align: center;
             cursor: pointer;
             flex-shrink: 0; /* Prevent items from shrinking */
-            width: 80px; /* Fixed width for consistency */
+            width: 100px; /* Increased fixed width for more text space */
             transition: transform 0.2s ease-in-out;
             background: none; /* Remove item background */
             border: none; /* Remove item border */
@@ -85,6 +85,10 @@
             font-size: 0.9em;
             color: #555;
             white-space: nowrap; /* Prevent name wrapping */
+            /* Optional: Add ellipsis for very long names if width isn't enough */
+            /* max-width: 100%; */
+            /* overflow: hidden; */
+            /* text-overflow: ellipsis; */
         }
 
         .category-item:hover img {
@@ -234,7 +238,9 @@
             .product-item img { width: 80px; height: 80px; font-size: 28px; }
             .product-details div:first-child { font-size: 1.05em; }
             .price { font-size: 1em; }
-            .category-item { width: 70px; }
+            .category-item {
+                 width: 85px; /* Adjusted width for smaller screens */
+            }
             .category-item img { width: 55px; height: 55px; font-size: 20px; }
             .categories {
                 gap: 25px; /* Adjusted gap for smaller screens */
