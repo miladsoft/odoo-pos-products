@@ -153,13 +153,53 @@
 
         /* --- Loading Indicator --- */
         .loading-indicator {
-            text-align: center;
-            font-size: 1.2em;
-            color: #555;
-            padding: 40px 20px; /* Add horizontal padding */
-            background: none; /* Remove background if set previously */
-            box-shadow: none; /* Remove shadow if set previously */
+            /* Remove text styles */
+            /* text-align: center; */
+            /* font-size: 1.2em; */
+            /* color: #555; */
+            padding: 40px 20px; /* Keep padding for spacing */
+            background: none;
+            box-shadow: none;
+            display: flex; /* Use flex to center animation */
+            justify-content: center;
+            align-items: center;
+            min-height: 100px; /* Ensure space for animation */
+            position: relative; /* Needed for pseudo-elements */
+            width: 100%; /* Ensure it takes full width if needed */
+            box-sizing: border-box; /* Include padding in width */
         }
+
+        /* Spinning Chef Emoji Animation */
+        .loading-indicator::before {
+            content: '👨‍🍳'; /* Chef emoji */
+            position: absolute;
+            font-size: 3.5em; /* Make emoji larger */
+            line-height: 1; /* Ensure proper vertical alignment */
+            /* Center the emoji - flexbox on parent already helps */
+            /* animation: spin 1.5s linear infinite; */ /* Remove spin */
+            animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) infinite; /* Apply shake animation */
+            transform-origin: center center; /* Ensure rotation is centered */
+        }
+
+        /* New Shake Animation */
+        @keyframes shake {
+          10%, 90% {
+            transform: rotate(-5deg);
+          }
+          20%, 80% {
+            transform: rotate(5deg);
+          }
+          30%, 50%, 70% {
+            transform: rotate(-5deg);
+          }
+          40%, 60% {
+            transform: rotate(5deg);
+          }
+          0%, 100% {
+            transform: rotate(0deg);
+          }
+        }
+
 
         /* --- Image Fallback Placeholder Styling --- */
         .image-fallback {
@@ -265,16 +305,16 @@
 <!-- Use H1 for the main restaurant title -->
 <h1>Al Basrah Restaurant Menu</h1>
 
-<!-- Categories Section -->
-<div id="categories" class="categories loading-indicator">Loading categories...</div>
+<!-- Categories Section - Apply loading class directly -->
+<div id="categories" class="categories loading-indicator"></div>
 
 <!-- Container for dynamic title and products -->
 <div class="container">
     <!-- Title for selected category -->
-    <h3 id="selected-category-title">All Products</h3>
+    <h3 id="selected-category-title"></h3> <!-- Clear initial title -->
 
-    <!-- Products Section -->
-    <div id="products" class="products loading-indicator">Loading products...</div>
+    <!-- Products Section - Apply loading class directly -->
+    <div id="products" class="products loading-indicator"></div>
 </div>
 
 
@@ -336,9 +376,11 @@ function handleImageError(imgElement, name) {
 
 async function fetchPOSData() {
     try {
-        // Show loading indicators in English
-        categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Loading categories...</div>'; // Adjust loading style
-        productsContainer.innerHTML = '<div class="loading-indicator">Please select a category or wait...</div>'; // Initial product message in English
+        // Ensure loading classes are present initially (handled by HTML now)
+        // categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Loading categories...</div>'; // Remove this
+        // productsContainer.innerHTML = '<div class="loading-indicator">Please select a category or wait...</div>'; // Remove this
+        categoriesContainer.classList.add('loading-indicator'); // Ensure class is present
+        productsContainer.classList.add('loading-indicator');   // Ensure class is present
         selectedCategoryTitle.textContent = ''; // Clear title initially
 
         const response = await fetch('/.netlify/functions/proxy');
@@ -359,15 +401,19 @@ async function fetchPOSData() {
         allProducts = extractProducts(data);
 
         // Render categories and initially all products
+        // Loading indicators will be removed inside these functions
         renderCategories(allCategories);
         filterAndRenderProducts('all'); // Initially show all products
 
     } catch (error) {
         console.error('Failed to fetch or process POS data:', error);
-        // Update error messages to English
-        categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Error loading categories.</div>';
-        productsContainer.innerHTML = '<div class="loading-indicator">Error loading products.</div>';
-        selectedCategoryTitle.textContent = 'Error';
+        // Update error messages to English - Keep text for errors
+        categoriesContainer.classList.remove('loading-indicator'); // Remove animation on error
+        productsContainer.classList.remove('loading-indicator'); // Remove animation on error
+        // Add warning emoji to errors
+        categoriesContainer.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">⚠️ Error loading categories.</div>'; // Show text error
+        productsContainer.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">⚠️ Error loading products.</div>'; // Show text error
+        selectedCategoryTitle.textContent = 'Error ⚠️';
     }
 }
 
@@ -417,40 +463,35 @@ function extractProducts(data) {
 
 function renderCategories(categories) {
     if (!categoriesContainer) return;
-    categoriesContainer.innerHTML = ''; // Clear loading message
+    categoriesContainer.innerHTML = ''; // Clear loading animation/content
     categoriesContainer.classList.remove('loading-indicator'); // Remove loading class
 
-    // Add "All" category item in English
+    // Add "All" category item in English with an emoji
     const allDiv = document.createElement('div');
-    // Use category-item class for styling
     allDiv.className = 'category-item';
-    // Use the new onerror handler
     allDiv.innerHTML = `
         <img src="/all.svg" alt="All" loading="lazy" onerror="handleImageError(this, 'All')">
-        <div>All</div>
+        <div>⭐ All</div>
     `;
     allDiv.dataset.categoryId = 'all'; // Use data attribute
     allDiv.addEventListener('click', () => filterAndRenderProducts('all'));
     categoriesContainer.appendChild(allDiv);
 
     if (categories.length === 0 && categoriesContainer.children.length === 1) { // Only "All" exists
-         // Update "not found" message to English
-         categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">No categories found.</div>'; // Keep loading style for message
+         // Add emoji to "not found" message
+         categoriesContainer.innerHTML = '<div style="text-align: center; padding: 15px 25px; color: #555;">😕 No categories found.</div>';
          return;
     }
 
 
     for (const cat of categories) {
         const div = document.createElement('div');
-        // Use category-item class for styling
         div.className = 'category-item';
         div.dataset.categoryId = cat.id; // Use data attribute
-        // Use the new onerror handler
         div.innerHTML = `
             <img src="${cat.image_url}" alt="${cat.name}" loading="lazy" onerror="handleImageError(this, '${cat.name.replace(/'/g, "\\'")}')">
             <div>${cat.name}</div>
         `;
-        // Add click listener
         div.addEventListener('click', () => filterAndRenderProducts(cat.id));
         categoriesContainer.appendChild(div);
     }
@@ -463,13 +504,13 @@ function filterAndRenderProducts(categoryId) {
     activeCategoryId = categoryId; // Update the active category ID
     updateActiveCategoryVisuals(); // Update the visual selection
 
-    // Update the selected category title
+    // Update the selected category title with an emoji
     if (selectedCategoryTitle) {
         if (categoryId === 'all') {
-            selectedCategoryTitle.textContent = 'All Products';
+            selectedCategoryTitle.textContent = '🍽️ All Products'; // Add plate emoji
         } else {
             const selectedCat = allCategories.find(cat => cat.id == categoryId); // Use == for potential type difference
-            selectedCategoryTitle.textContent = selectedCat ? selectedCat.name : 'Products';
+            selectedCategoryTitle.textContent = selectedCat ? `🍽️ ${selectedCat.name}` : '🍽️ Products'; // Add plate emoji
         }
     }
 
@@ -504,20 +545,18 @@ function updateActiveCategoryVisuals() {
 
 function renderProducts(products) {
     if (!productsContainer) return;
-    productsContainer.innerHTML = ''; // Clear previous products or loading message
+    productsContainer.innerHTML = ''; // Clear previous products or loading animation
     productsContainer.classList.remove('loading-indicator'); // Remove loading class
 
     if (products.length === 0) {
-        // Use loading style for the message for consistency
-        // Update "not found" message to English
-        productsContainer.innerHTML = '<div class="loading-indicator">No products found in this category.</div>';
+        // Add emoji to "not found" message
+        productsContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">😕 No products found in this category.</div>';
         return;
     }
 
 
     for (const prod of products) {
         const div = document.createElement('div');
-        // Use the new product-item class
         div.className = 'product-item';
 
         // Create image element separately to attach listener and onerror
@@ -545,10 +584,11 @@ function renderProducts(products) {
         });
 
         // Structure for image on right, details on left
+        // Add money emoji to price
         div.innerHTML = `
             <div class="product-details">
                 <div>${prod.name}</div>
-                <div class="price">${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
+                <div class="price">💰 ${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
             </div>
         `;
         // Prepend the image element (since layout uses flex, order matters if not using order property)
@@ -578,6 +618,5 @@ modalOverlay.addEventListener('click', (event) => {
 // Initial fetch when the script loads
 fetchPOSData();
 </script>
-
 </body>
 </html>
