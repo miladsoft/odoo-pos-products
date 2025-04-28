@@ -51,16 +51,10 @@
             display: flex; /* Horizontal layout */
             overflow-x: auto; /* Enable horizontal scrolling */
             padding: 15px 25px; /* Adjusted padding */
-            gap: 25px; /* Increased space between circles */
+            gap: 40px; /* Further Increased space between circles */
             margin-top: 0;
             background-color: white; /* Background for the scroll area */
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
-            /* Hide scrollbar */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-        .categories::-webkit-scrollbar { /* Hide scrollbar for Chrome, Safari, Opera */
-            display: none;
         }
 
         .category-item {
@@ -242,7 +236,10 @@
             .price { font-size: 1em; }
             .category-item { width: 70px; }
             .category-item img { width: 55px; height: 55px; font-size: 20px; }
-            .categories { gap: 15px; padding: 10px 15px; }
+            .categories {
+                gap: 25px; /* Adjusted gap for smaller screens */
+                padding: 10px 15px;
+            }
             #selected-category-title { font-size: 1.2em; }
             .modal-close { top: 5px; right: 5px; width: 30px; height: 30px; font-size: 20px; line-height: 30px;}
         }
