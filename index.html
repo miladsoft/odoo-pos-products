@@ -216,20 +216,23 @@
             background: white;
             color: #333;
             border: none;
-            border-radius: 50%;
+            border-radius: 50%; /* Ensure it's always a circle */
             width: 35px;
             height: 35px;
-            font-size: 24px;
-            line-height: 35px; /* Center the 'X' */
-            text-align: center;
+            font-size: 20px; /* Adjust font size for better centering */
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.2s, color 0.2s;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            display: flex; /* Use flexbox for centering */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            /* Remove line-height and text-align if using flexbox */
         }
         .modal-close:hover {
             background-color: #eee;
             color: black;
+            transform: scale(1.1); /* Add slight scale effect on hover */
         }
 
         /* Basic Responsive Adjustments */
@@ -247,7 +250,14 @@
                 padding: 10px 15px;
             }
             #selected-category-title { font-size: 1.2em; }
-            .modal-close { top: 5px; right: 5px; width: 30px; height: 30px; font-size: 20px; line-height: 30px;}
+            .modal-close {
+                top: 5px; /* Adjust position for smaller screens */
+                right: 5px;
+                width: 30px; /* Slightly smaller */
+                height: 30px;
+                font-size: 18px; /* Adjust font size */
+                /* Flex properties are inherited, no need to repeat */
+            }
         }
 
     </style>
