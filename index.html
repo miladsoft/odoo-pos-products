@@ -1,58 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Set language to English and direction to left-to-right -->
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
+    <!-- Update title to English -->
     <title>POS Categories and Products</title>
+    <!-- Import Vazirmatn font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            /* Use Vazirmatn font */
+            font-family: 'Vazirmatn', Arial, sans-serif;
             background: #f9f9f9;
             margin: 0;
             padding: 20px;
+             /* Set text direction back to default LTR */
+            direction: ltr;
         }
         h1, h2 {
             text-align: center;
+            color: #333;
         }
         .categories, .products {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            /* Adjust minmax for potentially wider text */
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 20px;
             margin-top: 20px;
         }
         .item {
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* Slightly enhanced shadow */
             text-align: center;
-            padding: 10px;
+            padding: 15px; /* Increased padding */
             overflow: hidden;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transition */
+            border: 1px solid #eee; /* Subtle border */
+        }
+        .category-item { /* Specific class for categories */
+             cursor: pointer; /* Indicate clickable */
+        }
+        .category-item:hover {
+            transform: translateY(-3px); /* Lift effect on hover */
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .category-item.active { /* Style for the selected category */
+            border-color: #27ae60;
+            box-shadow: 0 6px 16px rgba(40, 174, 96, 0.3);
+            transform: translateY(-2px);
         }
         .item img {
             width: 100px;
             height: 100px;
             object-fit: cover;
             margin-bottom: 10px;
-            border-radius: 8px;
+            border-radius: 8px; /* Match item radius */
+            border: 1px solid #eee; /* Border for images */
         }
         .price {
             font-weight: bold;
-            color: #27ae60;
-            margin-top: 5px;
+            color: #27ae60; /* Keep green color */
+            margin-top: 8px; /* Adjusted margin */
+            font-size: 1.1em; /* Slightly larger price */
+            /* Ensure price direction is LTR if needed, though currency formatting should handle it */
+            direction: ltr;
+        }
+        /* Basic loading indicator style */
+        .loading-indicator {
+            text-align: center;
+            font-size: 1.2em;
+            color: #555;
+            padding: 40px 0;
         }
     </style>
 </head>
 <body>
 
+<!-- Update heading to English -->
 <h1>POS Categories</h1>
-<div id="categories" class="categories">Loading categories...</div>
+<!-- Update loading message to English -->
+<div id="categories" class="categories loading-indicator">Loading categories...</div>
 
+<!-- Update heading to English -->
 <h2>POS Products</h2>
-<div id="products" class="products">Loading products...</div>
+<!-- Update loading message to English -->
+<div id="products" class="products loading-indicator">Loading products...</div>
 
 <script>
+// Store data globally
+let allCategories = [];
+let allProducts = [];
+let activeCategoryId = 'all'; // Keep track of the selected category
+
+// Get container elements once
+const categoriesContainer = document.getElementById('categories');
+const productsContainer = document.getElementById('products');
+
 async function fetchPOSData() {
     try {
-        // Fetch data from the Netlify function proxy
+        // Show loading indicators in English
+        categoriesContainer.innerHTML = '<div class="loading-indicator">Loading categories...</div>';
+        productsContainer.innerHTML = '<div class="loading-indicator">Please select a category or wait...</div>'; // Initial product message in English
+
         const response = await fetch('/.netlify/functions/proxy');
 
         if (!response.ok) {
@@ -61,36 +111,35 @@ async function fetchPOSData() {
 
         const data = await response.json();
 
-        // Check if the expected data structure exists
         if (!data || !data.result) {
             console.error('Invalid data structure received:', data);
             throw new Error('Invalid data structure received from server.');
         }
 
-        const categories = extractCategories(data);
-        const products = extractProducts(data);
+        // Store fetched data
+        allCategories = extractCategories(data);
+        allProducts = extractProducts(data);
 
-        renderCategories(categories);
-        renderProducts(products);
+        // Render categories and initially all products
+        renderCategories(allCategories);
+        filterAndRenderProducts('all'); // Initially show all products
 
     } catch (error) {
         console.error('Failed to fetch or process POS data:', error);
-        document.getElementById('categories').innerText = 'Failed to load categories.';
-        document.getElementById('products').innerText = 'Failed to load products.';
+        // Update error messages to English
+        categoriesContainer.innerHTML = '<div class="loading-indicator">Error loading categories.</div>';
+        productsContainer.innerHTML = '<div class="loading-indicator">Error loading products.</div>';
     }
 }
 
 function extractCategories(data) {
     const categories = [];
-    // Use the key "pos.category" as indicated by the C# model's JsonProperty attribute
     if (data?.result?.['pos.category']) {
         for (const cat of data.result['pos.category']) {
-            // Only add if it has an id and name
             if (cat.id && cat.name) {
                 categories.push({
                     id: cat.id,
                     name: cat.name,
-                    // Construct image URL based on Odoo's pattern
                     image_url: `https://albasrah.odoo.com/web/image/pos.category/${cat.id}/image_128`
                 });
             }
@@ -98,77 +147,130 @@ function extractCategories(data) {
     } else {
         console.warn('No "pos.category" data found in the response.');
     }
+    // Sort categories alphabetically by name
+    categories.sort((a, b) => a.name.localeCompare(b.name));
     return categories;
 }
 
 function extractProducts(data) {
     const products = [];
-    // Use the key "product.template" as indicated by the C# model's JsonProperty attribute
     if (data?.result?.['product.template']) {
         for (const prod of data.result['product.template']) {
-            // Filter products available in POS and ensure basic data exists
             if (prod.available_in_pos && prod.id && prod.name) {
                 products.push({
                     id: prod.id,
                     name: prod.name,
-                    // Use list_price, default to 0 if not present
                     price: prod.list_price || 0,
-                    // Construct image URL based on Odoo's pattern https://albasrah.odoo.com/web/image/product.template/228/image_512?unique=
                     image_url: `https://albasrah.odoo.com/web/image/product.template/${prod.id}/image_512`,
-                    // Note: categ_id might be boolean `false` or an ID. Handle appropriately if needed later.
-                    // pos_categ_ids is likely the correct field for POS categories.
-                    pos_category_ids: prod.pos_categ_ids || []
+                    // Ensure pos_category_ids is always an array
+                    pos_category_ids: Array.isArray(prod.pos_categ_ids) ? prod.pos_categ_ids : []
                 });
             }
         }
     } else {
         console.warn('No "product.template" data found in the response.');
     }
+     // Sort products alphabetically by name
+    products.sort((a, b) => a.name.localeCompare(b.name));
     return products;
 }
 
 function renderCategories(categories) {
-    const container = document.getElementById('categories');
-    if (!container) return;
-    container.innerHTML = ''; // Clear loading message
+    if (!categoriesContainer) return;
+    categoriesContainer.innerHTML = ''; // Clear loading message
+    categoriesContainer.classList.remove('loading-indicator'); // Remove loading class
 
-    if (categories.length === 0) {
-        container.innerText = 'No categories found.';
-        return;
+    // Add "All" category item in English
+    const allDiv = document.createElement('div');
+    allDiv.className = 'item category-item'; // Add category-item class
+    allDiv.innerHTML = `
+        <img src="https://via.placeholder.com/100?text=All" alt="All" loading="lazy">
+        <div>All Categories</div>
+    `;
+    allDiv.dataset.categoryId = 'all'; // Use data attribute
+    allDiv.addEventListener('click', () => filterAndRenderProducts('all'));
+    categoriesContainer.appendChild(allDiv);
+
+    if (categories.length === 0 && categoriesContainer.children.length === 1) { // Only "All" exists
+         // Update "not found" message to English
+         categoriesContainer.innerHTML = '<div class="loading-indicator">No categories found.</div>'; // Keep loading style for message
+         return;
     }
+
 
     for (const cat of categories) {
         const div = document.createElement('div');
-        div.className = 'item';
-        // Added onerror to handle missing images
+        div.className = 'item category-item'; // Add category-item class
+        div.dataset.categoryId = cat.id; // Use data attribute
         div.innerHTML = `
             <img src="${cat.image_url}" alt="${cat.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/100?text=No+Image';">
             <div>${cat.name}</div>
         `;
-        container.appendChild(div);
+        // Add click listener
+        div.addEventListener('click', () => filterAndRenderProducts(cat.id));
+        categoriesContainer.appendChild(div);
+    }
+
+    // Apply active class to the initially selected category
+    updateActiveCategoryVisuals();
+}
+
+function filterAndRenderProducts(categoryId) {
+    activeCategoryId = categoryId; // Update the active category ID
+    updateActiveCategoryVisuals(); // Update the visual selection
+
+    let filteredProducts = [];
+    if (categoryId === 'all') {
+        filteredProducts = allProducts;
+    } else {
+        // Filter products: check if product's pos_category_ids includes the selected categoryId
+        const numCategoryId = Number(categoryId); // Ensure comparison is numeric if needed
+        filteredProducts = allProducts.filter(prod =>
+            prod.pos_category_ids.includes(numCategoryId)
+        );
+    }
+    renderProducts(filteredProducts);
+}
+
+function updateActiveCategoryVisuals() {
+    if (!categoriesContainer) return;
+    // Remove active class from all category items
+    const categoryItems = categoriesContainer.querySelectorAll('.category-item');
+    categoryItems.forEach(item => item.classList.remove('active'));
+
+    // Add active class to the selected one
+    const activeItem = categoriesContainer.querySelector(`.category-item[data-category-id="${activeCategoryId}"]`);
+    if (activeItem) {
+        activeItem.classList.add('active');
     }
 }
 
+
 function renderProducts(products) {
-    const container = document.getElementById('products');
-    if (!container) return;
-    container.innerHTML = ''; // Clear loading message
+    if (!productsContainer) return;
+    productsContainer.innerHTML = ''; // Clear previous products or loading message
+    productsContainer.classList.remove('loading-indicator'); // Remove loading class
 
     if (products.length === 0) {
-        container.innerText = 'No products found.';
+        // Use loading style for the message for consistency
+        // Update "not found" message to English
+        productsContainer.innerHTML = '<div class="loading-indicator">No products found in this category.</div>';
         return;
     }
 
     for (const prod of products) {
         const div = document.createElement('div');
-        div.className = 'item';
-        // Added onerror to handle missing images and formatted price
+        div.className = 'item'; // Product items don't need category-item class
+        // Changed $ to OMR and use locale string for potential formatting
         div.innerHTML = `
             <img src="${prod.image_url}" alt="${prod.name}" loading="lazy" onerror="this.onerror=null; this.src='https://via.placeholder.com/100?text=No+Image';">
             <div>${prod.name}</div>
-            <div class="price">$${prod.price.toFixed(2)}</div>
+            <div class="price">${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
         `;
-        container.appendChild(div);
+        // Note: OMR typically uses 3 decimal places. Adjusted toLocaleString.
+        // If you prefer exactly "OMR 10.000", you might need custom formatting:
+        // <div class="price">OMR ${prod.price.toFixed(3)}</div>
+        productsContainer.appendChild(div);
     }
 }
 
