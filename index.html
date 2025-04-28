@@ -37,17 +37,28 @@
 <script>
 async function fetchOdooPOS() {
     try {
+        // NOTE: This fetch request might fail due to CORS (Cross-Origin Resource Sharing)
+        // policies if the HTML file is opened directly from the filesystem (file://)
+        // or served from a different domain than 'albasrah.odoo.com'.
+        // The 'albasrah.odoo.com' server needs to send appropriate CORS headers
+        // (e.g., Access-Control-Allow-Origin) to allow this request.
+        // If you see "TypeError: Failed to fetch" in the console, it's likely a CORS issue.
+        // Possible workarounds for development:
+        // 1. Use a browser extension that disables CORS checks (use with caution).
+        // 2. Set up a local proxy server to forward requests to the Odoo domain.
         const response = await fetch('https://albasrah.odoo.com/pos-self/data/1', {
             method: 'POST', // مهم: POST باشه
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', // مهم: کوکی‌ها رو هم بفرست
+            credentials: 'include', // مهم: کوکی‌ها رو هم بفرست (Requires Access-Control-Allow-Credentials header from server)
             body: JSON.stringify({}) // بدنه خالی
         });
 
         if (!response.ok) {
-            throw new Error('Network response was not ok.');
+            // Log the status for more details if available
+            console.error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Network response was not ok. Status: ${response.status}`);
         }
 
         const jsonData = await response.json();
@@ -58,19 +69,31 @@ async function fetchOdooPOS() {
         const products = [];
 
         // ساخت دیکشنری دسته‌بندی‌ها
-        jsonData['pos.categories'].forEach(category => {
-            categories[category.id] = category.name;
-        });
+        // Check if 'pos.categories' exists and is an array
+        if (jsonData['pos.categories'] && Array.isArray(jsonData['pos.categories'])) {
+            jsonData['pos.categories'].forEach(category => {
+                categories[category.id] = category.name;
+            });
+        } else {
+            console.warn("POS categories data is missing or not an array:", jsonData['pos.categories']);
+        }
+
 
         // ساخت لیست محصولات
-        jsonData['products'].forEach(product => {
-            products.push({
-                id: product.id,
-                name: product.display_name,
-                price: product.lst_price,
-                categoryId: product.pos_categ_id ? product.pos_categ_id[0] : null,
+        // Check if 'products' exists and is an array
+        if (jsonData['products'] && Array.isArray(jsonData['products'])) {
+            jsonData['products'].forEach(product => {
+                products.push({
+                    id: product.id,
+                    name: product.display_name,
+                    price: product.lst_price,
+                    categoryId: product.pos_categ_id ? product.pos_categ_id[0] : null,
+                });
             });
-        });
+        } else {
+            console.warn("Products data is missing or not an array:", jsonData['products']);
+        }
+
 
         // حالا محصولات رو دسته‌بندی شده نمایش بده
         for (const [catId, catName] of Object.entries(categories)) {
@@ -83,16 +106,52 @@ async function fetchOdooPOS() {
                 .forEach(p => {
                     const prodDiv = document.createElement('div');
                     prodDiv.className = 'product';
-                    prodDiv.innerText = `${p.name} - $${p.price}`;
+                    // Display price formatted to 2 decimal places, handle potential non-numeric values
+                    const priceFormatted = typeof p.price === 'number' ? p.price.toFixed(2) : 'N/A';
+                    prodDiv.innerText = `${p.name} - $${priceFormatted}`;
                     catDiv.appendChild(prodDiv);
                 });
 
+            // Only append category div if it contains products
+            if (catDiv.querySelector('.product')) {
+                 contentDiv.appendChild(catDiv);
+            }
+        }
+
+        // Handle products without a category (optional)
+        const uncategorizedProducts = products.filter(p => !p.categoryId || !categories[p.categoryId]);
+        if (uncategorizedProducts.length > 0) {
+            const catDiv = document.createElement('div');
+            catDiv.className = 'category';
+            catDiv.innerHTML = `<h2>Uncategorized</h2>`;
+            uncategorizedProducts.forEach(p => {
+                 const prodDiv = document.createElement('div');
+                 prodDiv.className = 'product';
+                 const priceFormatted = typeof p.price === 'number' ? p.price.toFixed(2) : 'N/A';
+                 prodDiv.innerText = `${p.name} - $${priceFormatted}`;
+                 catDiv.appendChild(prodDiv);
+            });
             contentDiv.appendChild(catDiv);
         }
 
+        // If no categories or products were loaded display a message
+        if (contentDiv.innerHTML === '') {
+             contentDiv.innerText = 'No products or categories found.';
+        }
+
+
     } catch (error) {
         console.error('Failed to fetch POS products:', error);
-        document.getElementById('content').innerText = 'Failed to load products.';
+        // Display a more informative error message
+        let errorMessage = 'Failed to load products.';
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            errorMessage += ' This might be due to a CORS issue or network problem. Check the browser console for more details.';
+        } else if (error.message.includes('Network response was not ok')) {
+             errorMessage += ` Server responded with status ${error.message.split(': ')[1]}.`;
+        } else {
+            errorMessage += ` Error: ${error.message}`;
+        }
+        document.getElementById('content').innerText = errorMessage;
     }
 }
 
