@@ -64,7 +64,7 @@
             text-align: center;
             cursor: pointer;
             flex-shrink: 0; /* Prevent items from shrinking */
-            width: 100px; /* Increased fixed width for more text space */
+            width: 250px; /* Increased fixed width for more text space */
             transition: transform 0.2s ease-in-out;
             background: none; /* Remove item background */
             border: none; /* Remove item border */
@@ -73,8 +73,8 @@
             border-radius: 0; /* Remove item border-radius */
         }
         .category-item img {
-            width: 65px; /* Size of the circle */
-            height: 65px;
+            width: 85px; /* Size of the circle */
+            height: 85px;
             object-fit: cover;
             border-radius: 50%; /* Make image circular */
             margin-bottom: 8px;
@@ -418,7 +418,7 @@ function renderCategories(categories) {
     allDiv.className = 'category-item';
     // Use the new onerror handler
     allDiv.innerHTML = `
-        <img src="https://via.placeholder.com/65/eee/ccc?text=A" alt="All" loading="lazy" onerror="handleImageError(this, 'All')">
+        <img src="/all.svg" alt="All" loading="lazy" onerror="handleImageError(this, 'All')">
         <div>All</div>
     `;
     allDiv.dataset.categoryId = 'all'; // Use data attribute
