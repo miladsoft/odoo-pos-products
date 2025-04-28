@@ -5,7 +5,11 @@ exports.handler = async function(event, context) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                method: "call",
+                params: {}
+            })
         });
 
         const data = await response.text();
