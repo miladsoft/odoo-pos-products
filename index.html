@@ -169,35 +169,25 @@
             box-sizing: border-box; /* Include padding in width */
         }
 
-        /* Spinning Chef Emoji Animation */
+        /* Food Cycle Emoji Animation */
         .loading-indicator::before {
-            content: '👨‍🍳'; /* Chef emoji */
+            content: '🍗'; /* Initial emoji */
             position: absolute;
-            font-size: 3.5em; /* Make emoji larger */
-            line-height: 1; /* Ensure proper vertical alignment */
-            /* Center the emoji - flexbox on parent already helps */
-            /* animation: spin 1.5s linear infinite; */ /* Remove spin */
-            animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) infinite; /* Apply shake animation */
-            transform-origin: center center; /* Ensure rotation is centered */
+            font-size: 3.5em; /* Keep emoji size */
+            line-height: 1;
+            /* Apply new food cycle animation */
+            animation: foodCycle 3s steps(1, end) infinite;
+            transform-origin: center center;
         }
 
-        /* New Shake Animation */
-        @keyframes shake {
-          10%, 90% {
-            transform: rotate(-5deg);
-          }
-          20%, 80% {
-            transform: rotate(5deg);
-          }
-          30%, 50%, 70% {
-            transform: rotate(-5deg);
-          }
-          40%, 60% {
-            transform: rotate(5deg);
-          }
-          0%, 100% {
-            transform: rotate(0deg);
-          }
+        /* Updated Food Cycle Animation */
+        @keyframes foodCycle {
+          0%, 100% { content: '🍗'; } /* Poultry Leg */
+          16.67% { content: '🍖'; }    /* Meat on Bone */
+          33.33% { content: '🥩'; }    /* Cut of Meat */
+          50%    { content: '🥘'; }    /* Shallow Pan of Food */
+          66.67% { content: '🍲'; }    /* Pot of Food */
+          83.33% { content: '🍚'; }    /* Cooked Rice */
         }
 
 
@@ -583,12 +573,15 @@ function renderProducts(products) {
             modalOverlay.style.display = 'flex'; // Show modal
         });
 
+        // Format number first, then append currency code
+        const formattedPrice = prod.price.toLocaleString('en-US', { style: 'decimal', minimumFractionDigits: 3 });
+
         // Structure for image on right, details on left
-        // Add money emoji to price
+        // Place OMR after the number
         div.innerHTML = `
             <div class="product-details">
                 <div>${prod.name}</div>
-                <div class="price">💰 ${prod.price.toLocaleString('en-US', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 })}</div>
+                <div class="price">💰 ${formattedPrice} OMR</div>
             </div>
         `;
         // Prepend the image element (since layout uses flex, order matters if not using order property)
