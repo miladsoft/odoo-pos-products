@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Odoo POS Fetcher</title>
+    <title>Odoo POS Fetcher via Proxy</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,7 +34,7 @@
 </head>
 <body>
 
-<h1>Fetch Odoo POS Products</h1>
+<h1>Fetch Odoo POS Products via Proxy</h1>
 
 <button onclick="fetchOdooPOS()">Fetch POS Data</button>
 
@@ -47,17 +46,8 @@ async function fetchOdooPOS() {
     outputDiv.innerText = 'Loading...';
 
     try {
-        const response = await fetch('https://albasrah.odoo.com/pos-self/data/1', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                jsonrpc: "2.0",
-                method: "call",
-                params: {}
-            })
+        const response = await fetch('/.netlify/functions/proxy', {
+            method: 'GET'
         });
 
         if (!response.ok) {
