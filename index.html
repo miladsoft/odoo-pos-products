@@ -113,8 +113,8 @@ function extractProducts(data) {
                     name: prod.name,
                     // Use list_price, default to 0 if not present
                     price: prod.list_price || 0,
-                    // Construct image URL based on Odoo's pattern
-                    image_url: `https://albasrah.odoo.com/web/image/product.template/${prod.id}/image_128`,
+                    // Construct image URL based on Odoo's pattern https://albasrah.odoo.com/web/image/product.template/228/image_512?unique=
+                    image_url: `https://albasrah.odoo.com/web/image/product.template/${prod.id}/image_512`,
                     // Note: categ_id might be boolean `false` or an ID. Handle appropriately if needed later.
                     // pos_categ_ids is likely the correct field for POS categories.
                     pos_category_ids: prod.pos_categ_ids || []
