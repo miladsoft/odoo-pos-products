@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<!-- Set language to English and direction to left-to-right -->
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Added viewport for responsiveness -->
+    <!-- Update title to English -->
+    <title>Al Basrah Restaurant Menu</title> <!-- Changed Title -->
+    <!-- Import Vazirmatn font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            /* Use Vazirmatn font */
+            font-family: 'Vazirmatn', Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0;
+            padding: 0 0 20px 0; /* Remove top/side padding, keep bottom */
+             /* Set text direction back to default LTR */
+            direction: ltr;
+        }
+        .container { /* Add a container for padding */
+            padding: 0 20px;
+        }
+        h1 { /* Style the main title */
+            text-align: center;
+            color: #333;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 1.8em; /* Slightly larger title */
+        }
+        h2 { /* Style the Products section title */
+             text-align: center;
+             color: #555;
+             margin-top: 30px;
+             margin-bottom: 15px;
+             font-size: 1.5em;
+        }
+        #selected-category-title { /* Style for the dynamic category title */
+            text-align: center;
+            color: #27ae60;
+            margin-top: 25px;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        /* --- Category Styling --- */
+        .categories {
+            display: flex; /* Horizontal layout */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            padding: 15px 25px; /* Adjusted padding */
+            /* gap: 40px; */ /* Keep or adjust gap as needed */
+            margin-top: 0;
+            background-color: white; /* Background for the scroll area */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow */
+        }
+
+        .category-item {
+            display: flex;
+            flex-direction: column; /* Stack image and text vertically */
+            align-items: center; /* Center items horizontally */
+            text-align: center;
+            cursor: pointer;
+            flex-shrink: 0; /* Prevent items from shrinking */
+            width: auto; /* Increased fixed width for more text space */
+            transition: transform 0.2s ease-in-out;
+            background: none; /* Remove item background */
+            border: none; /* Remove item border */
+            box-shadow: none; /* Remove item shadow */
+            padding: 0; /* Remove item padding */
+            border-radius: 0; /* Remove item border-radius */
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .category-item img {
+            width: 85px; /* Size of the circle */
+            height: 85px;
+            object-fit: cover;
+            border-radius: 50%; /* Make image circular */
+            margin-bottom: 8px;
+            border: 3px solid transparent; /* Border for active state */
+            transition: border-color 0.2s ease-in-out;
+        }
+         .category-item div { /* Style for category name */
+            font-size: 0.9em;
+            color: #555;
+            white-space: nowrap; /* Prevent name wrapping */
+            /* Optional: Add ellipsis for very long names if width isn't enough */
+            /* max-width: 100%; */
+            /* overflow: hidden; */
+            /* text-overflow: ellipsis; */
+        }
+
+        .category-item:hover img {
+             border-color: #ddd; /* Subtle hover border */
+        }
+        .category-item.active img { /* Style for the selected category */
+            border-color: #27ae60; /* Green border for active */
+        }
+         .category-item.active div {
+             color: #27ae60;
+             font-weight: bold;
+         }
+
+        /* --- Product Styling --- */
+        .products {
+            display: block; /* Change from grid to block for list */
+            margin-top: 10px; /* Reduced top margin */
+            gap: 0; /* Remove grid gap */
+        }
+        .product-item { /* New class for product list items */
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px;
+            margin-bottom: 15px; /* Space between product rows */
+            display: flex; /* Use flex for row layout */
+            align-items: center; /* Vertically align items */
+            transition: box-shadow 0.2s ease-in-out;
+            border: 1px solid #eee;
+        }
+        .product-item:hover {
+             box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .product-item img {
+            width: 110px; /* Increased image size */
+            height: 110px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-left: 15px; /* Space between image and text (since LTR) */
+            border: 1px solid #eee;
+            flex-shrink: 0; /* Prevent image shrinking */
+            cursor: pointer; /* Indicate clickable for modal */
+        }
+        .product-details { /* Container for name and price */
+            flex-grow: 1; /* Allow text to take remaining space */
+            text-align: left; /* Align text to the left */
+        }
+        .product-details div:first-child { /* Product name */
+            font-weight: bold;
+            font-size: 1.15em; /* Slightly larger product name */
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .price { /* Price styling */
+            font-weight: bold;
+            color: #27ae60;
+            font-size: 1.05em;
+            direction: ltr; /* Ensure price format is LTR */
+        }
+
+        /* --- Loading Indicator --- */
+        .loading-indicator {
+            /* Remove text styles */
+            /* text-align: center; */
+            /* font-size: 1.2em; */
+            /* color: #555; */
+            padding: 40px 20px; /* Keep padding for spacing */
+            background: none;
+            box-shadow: none;
+            display: flex; /* Use flex to center animation */
+            justify-content: center;
+            align-items: center;
+            min-height: 100px; /* Ensure space for animation */
+            position: relative; /* Needed for pseudo-elements */
+            width: 100%; /* Ensure it takes full width if needed */
+            box-sizing: border-box; /* Include padding in width */
+        }
+
+        /* Food Cycle Emoji Animation */
+        .loading-indicator::before {
+            content: '🍗'; /* Initial emoji */
+            position: absolute;
+            font-size: 3.5em; /* Keep emoji size */
+            line-height: 1;
+            /* Apply new food cycle animation */
+            animation: foodCycle 3s steps(1, end) infinite;
+            transform-origin: center center;
+        }
+
+        /* Updated Food Cycle Animation */
+        @keyframes foodCycle {
+          0%, 100% { content: '🍗'; } /* Poultry Leg */
+          16.67% { content: '🍖'; }    /* Meat on Bone */
+          33.33% { content: '🥩'; }    /* Cut of Meat */
+          50%    { content: '🥘'; }    /* Shallow Pan of Food */
+          66.67% { content: '🍲'; }    /* Pot of Food */
+          83.33% { content: '🍚'; }    /* Cooked Rice */
+        }
+
+
+        /* --- Image Fallback Placeholder Styling --- */
+        .image-fallback {
+            background-size: cover; /* Ensure background color covers */
+            background-position: center;
+            border: 1px solid #ddd; /* Add a border to fallbacks */
+        }
+        .image-fallback span { /* The letter inside fallback */
+             display: block; /* Make span visible */
+             color: white;
+             text-shadow: 1px 1px 2px rgba(0,0,0,0.5); /* Make letter more readable */
+        }
+
+
+        /* --- Modal Styling --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8); /* Darker overlay */
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000; /* Ensure it's on top */
+            cursor: pointer; /* Indicate clicking overlay closes it */
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            position: relative;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex; /* Use flex to center image */
+            align-items: center;
+            justify-content: center;
+            cursor: default; /* Prevent overlay cursor */
+            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+        }
+        .modal-content img {
+            display: block;
+            max-width: 100%;
+            max-height: calc(90vh - 50px); /* Limit image height based on viewport */
+            object-fit: contain; /* Ensure whole image is visible */
+            border-radius: 4px;
+        }
+        .modal-close {
+            position: absolute;
+            top: -15px; /* Position outside the top-right */
+            right: -15px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 50%; /* Ensure it's always a circle */
+            width: 35px;
+            height: 35px;
+            font-size: 20px; /* Adjust font size for better centering */
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+            display: flex; /* Use flexbox for centering */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+            /* Remove line-height and text-align if using flexbox */
+        }
+        .modal-close:hover {
+            background-color: #eee;
+            color: black;
+            transform: scale(1.1); /* Add slight scale effect on hover */
+        }
+
+        /* Basic Responsive Adjustments */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5em; }
+            .product-item img { width: 80px; height: 80px; font-size: 28px; }
+            .product-details div:first-child { font-size: 1.05em; }
+            .price { font-size: 1em; }
+            .category-item img { width: 55px; height: 55px; font-size: 20px; }
+            .categories {
+                gap: 25px; /* Adjusted gap for smaller screens */
+                padding: 10px 15px;
+            }
+            #selected-category-title { font-size: 1.2em; }
+            .modal-close {
+                top: 5px; /* Adjust position for smaller screens */
+                right: 5px;
+                width: 30px; /* Slightly smaller */
+                height: 30px;
+                font-size: 18px; /* Adjust font size */
+                /* Flex properties are inherited, no need to repeat */
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- Use H1 for the main restaurant title -->
+<h1>Al Basrah Restaurant Menu</h1>
+
+<!-- Categories Section - Apply loading class directly -->
+<div id="categories" class="categories loading-indicator"></div>
+
+<!-- Container for dynamic title and products -->
+<div class="container">
+    <!-- Title for selected category -->
+    <h3 id="selected-category-title"></h3> <!-- Clear initial title -->
+
+    <!-- Products Section - Apply loading class directly -->
+    <div id="products" class="products loading-indicator"></div>
+</div>
+
+
+<!-- Modal Structure -->
+<div id="imageModal" class="modal-overlay">
+    <div class="modal-content">
+        <button id="modalClose" class="modal-close">&times;</button>
+        <img id="modalImage" src="" alt="Enlarged Product Image">
+    </div>
+</div>
+
+
+<script>
+// Store data globally
+let allCategories = [];
+let allProducts = [];
+let activeCategoryId = 'all'; // Keep track of the selected category
+
+// Get container elements once
+const categoriesContainer = document.getElementById('categories');
+const productsContainer = document.getElementById('products');
+const selectedCategoryTitle = document.getElementById('selected-category-title'); // Get title element
+
+// Modal Elements
+const modalOverlay = document.getElementById('imageModal');
+const modalImage = document.getElementById('modalImage');
+const modalClose = document.getElementById('modalClose');
+
+
+// Helper function to generate a color from a string (simple hash)
+function stringToColor(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    // Generate a color in HSL format for better control
+    const hue = hash % 360;
+    return `hsl(${hue}, 50%, 60%)`; // Adjust saturation/lightness as needed
+}
+
+// Helper function to handle image errors and generate fallback
+function handleImageError(imgElement, name) {
+    imgElement.onerror = null; // Prevent infinite loop if fallback fails
+    const color = stringToColor(name);
+    imgElement.style.backgroundColor = color;
+    imgElement.classList.add('image-fallback'); // Add class for styling
+    imgElement.src = ''; // Clear the broken src
+    // Add the first letter
+    const firstLetter = name ? name.charAt(0).toUpperCase() : '?';
+    // Create a span for the letter to allow styling
+    const letterSpan = document.createElement('span');
+    letterSpan.textContent = firstLetter;
+    // Clear existing content (like alt text) and add the letter
+    imgElement.innerHTML = '';
+    imgElement.appendChild(letterSpan);
+}
+
+
+async function fetchPOSData() {
+    try {
+        // Ensure loading classes are present initially (handled by HTML now)
+        // categoriesContainer.innerHTML = '<div class="loading-indicator" style="width: 100%; text-align: center;">Loading categories...</div>'; // Remove this
+        // productsContainer.innerHTML = '<div class="loading-indicator">Please select a category or wait...</div>'; // Remove this
+        categoriesContainer.classList.add('loading-indicator'); // Ensure class is present
+        productsContainer.classList.add('loading-indicator');   // Ensure class is present
+        selectedCategoryTitle.textContent = ''; // Clear title initially
+
+        const response = await fetch('/.netlify/functions/proxy');
+
+        if (!response.ok) {
+            throw new Error(`Network response was not ok. Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.result) {
+            console.error('Invalid data structure received:', data);
+            throw new Error('Invalid data structure received from server.');
+        }
+
+        // Store fetched data
+        allCategories = extractCategories(data);
+        allProducts = extractProducts(data);
+
+        // Render categories and initially all products
+        // Loading indicators will be removed inside these functions
+        renderCategories(allCategories);
+        filterAndRenderProducts('all'); // Initially show all products
+
+    } catch (error) {
+        console.error('Failed to fetch or process POS data:', error);
+        // Update error messages to English - Keep text for errors
+        categoriesContainer.classList.remove('loading-indicator'); // Remove animation on error
+        productsContainer.classList.remove('loading-indicator'); // Remove animation on error
+        // Add warning emoji to errors
+        categoriesContainer.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">⚠️ Error loading categories.</div>'; // Show text error
+        productsContainer.innerHTML = '<div style="text-align: center; color: red; padding: 20px;">⚠️ Error loading products.</div>'; // Show text error
+        selectedCategoryTitle.textContent = 'Error ⚠️';
+    }
+}
+
+function extractCategories(data) {
+    const categories = [];
+    if (data?.result?.['pos.category']) {
+        for (const cat of data.result['pos.category']) {
+            if (cat.id && cat.name) {
+                categories.push({
+                    id: cat.id,
+                    name: cat.name,
+                    image_url: `https://albasrah.odoo.com/web/image/pos.category/${cat.id}/image_128`
+                });
+            }
+        }
+    } else {
+        console.warn('No "pos.category" data found in the response.');
+    }
+    // Sort categories alphabetically by name
+    categories.sort((a, b) => a.name.localeCompare(b.name));
+    return categories;
+}
+
+function extractProducts(data) {
+    const products = [];
+    if (data?.result?.['product.template']) {
+        for (const prod of data.result['product.template']) {
+            if (prod.available_in_pos && prod.id && prod.name) {
+                products.push({
+                    id: prod.id,
+                    name: prod.name,
+                    price: prod.list_price || 0,
+                    image_url: `https://albasrah.odoo.com/web/image/product.template/${prod.id}/image_512`,
+                    // Ensure pos_category_ids is always an array
+                    pos_category_ids: Array.isArray(prod.pos_categ_ids) ? prod.pos_categ_ids : []
+                });
+            }
+        }
+    } else {
+        console.warn('No "product.template" data found in the response.');
+    }
+     // Sort products alphabetically by name
+    products.sort((a, b) => a.name.localeCompare(b.name));
+    return products;
+}
+
+
+function renderCategories(categories) {
+    if (!categoriesContainer) return;
+    categoriesContainer.innerHTML = ''; // Clear loading animation/content
+    categoriesContainer.classList.remove('loading-indicator'); // Remove loading class
+
+    // Add "All" category item in English with an emoji
+    const allDiv = document.createElement('div');
+    allDiv.className = 'category-item';
+    allDiv.innerHTML = `
+        <img src="/all.svg" alt="All" loading="lazy" onerror="handleImageError(this, 'All')">
+        <div>⭐ All</div>
+    `;
+    allDiv.dataset.categoryId = 'all'; // Use data attribute
+    allDiv.addEventListener('click', () => filterAndRenderProducts('all'));
+    categoriesContainer.appendChild(allDiv);
+
+    if (categories.length === 0 && categoriesContainer.children.length === 1) { // Only "All" exists
+         // Add emoji to "not found" message
+         categoriesContainer.innerHTML = '<div style="text-align: center; padding: 15px 25px; color: #555;">😕 No categories found.</div>';
+         return;
+    }
+
+
+    for (const cat of categories) {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.dataset.categoryId = cat.id; // Use data attribute
+        div.innerHTML = `
+            <img src="${cat.image_url}" alt="${cat.name}" loading="lazy" onerror="handleImageError(this, '${cat.name.replace(/'/g, "\\'")}')">
+            <div>${cat.name}</div>
+        `;
+        div.addEventListener('click', () => filterAndRenderProducts(cat.id));
+        categoriesContainer.appendChild(div);
+    }
+
+    // Apply active class to the initially selected category
+    updateActiveCategoryVisuals();
+}
+
+function filterAndRenderProducts(categoryId) {
+    activeCategoryId = categoryId; // Update the active category ID
+    updateActiveCategoryVisuals(); // Update the visual selection
+
+    // Update the selected category title with an emoji
+    if (selectedCategoryTitle) {
+        if (categoryId === 'all') {
+            selectedCategoryTitle.textContent = '🍽️ All Products'; // Add plate emoji
+        } else {
+            const selectedCat = allCategories.find(cat => cat.id == categoryId); // Use == for potential type difference
+            selectedCategoryTitle.textContent = selectedCat ? `🍽️ ${selectedCat.name}` : '🍽️ Products'; // Add plate emoji
+        }
+    }
+
+    let filteredProducts = [];
+    if (categoryId === 'all') {
+        filteredProducts = allProducts;
+    } else {
+        // Filter products: check if product's pos_category_ids includes the selected categoryId
+        const numCategoryId = Number(categoryId); // Ensure comparison is numeric if needed
+        filteredProducts = allProducts.filter(prod =>
+            prod.pos_category_ids.includes(numCategoryId)
+        );
+    }
+    renderProducts(filteredProducts);
+}
+
+function updateActiveCategoryVisuals() {
+    if (!categoriesContainer) return;
+    // Remove active class from all category items
+    const categoryItems = categoriesContainer.querySelectorAll('.category-item');
+    categoryItems.forEach(item => item.classList.remove('active'));
+
+    // Add active class to the selected one
+    const activeItem = categoriesContainer.querySelector(`.category-item[data-category-id="${activeCategoryId}"]`);
+    if (activeItem) {
+        activeItem.classList.add('active');
+        // Optional: Scroll the active item into view
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
+
+
+function renderProducts(products) {
+    if (!productsContainer) return;
+    productsContainer.innerHTML = ''; // Clear previous products or loading animation
+    productsContainer.classList.remove('loading-indicator'); // Remove loading class
+
+    if (products.length === 0) {
+        // Add emoji to "not found" message
+        productsContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #555;">😕 No products found in this category.</div>';
+        return;
+    }
+
+
+    for (const prod of products) {
+        const div = document.createElement('div');
+        div.className = 'product-item';
+
+        // Create image element separately to attach listener and onerror
+        const img = document.createElement('img');
+        img.src = prod.image_url;
+        img.alt = prod.name;
+        img.loading = 'lazy';
+        // Use the new onerror handler - escape quotes in name
+        img.onerror = () => handleImageError(img, prod.name.replace(/'/g, "\\'"));
+
+        // Add click listener for modal
+        img.addEventListener('click', () => {
+            modalImage.src = img.src; // Use the potentially updated src (could be fallback data URL if generated)
+            // If it's a fallback, use the background style instead of src for the modal
+             if (img.classList.contains('image-fallback')) {
+                 modalImage.src = ''; // Clear src
+                 modalImage.style.backgroundColor = img.style.backgroundColor;
+                 modalImage.alt = img.alt + " (Image unavailable)";
+                 // Optionally display the letter in the modal too, though might be complex
+             } else {
+                 modalImage.style.backgroundColor = ''; // Clear potential fallback color
+                 modalImage.alt = img.alt;
+             }
+            modalOverlay.style.display = 'flex'; // Show modal
+        });
+
+        // Format number first, then append currency code
+        const formattedPrice = prod.price.toLocaleString('en-US', { style: 'decimal', minimumFractionDigits: 3 });
+
+        // Structure for image on right, details on left
+        // Place OMR after the number
+        div.innerHTML = `
+            <div class="product-details">
+                <div>${prod.name}</div>
+                <div class="price">💰 ${formattedPrice} OMR</div>
+            </div>
+        `;
+        // Prepend the image element (since layout uses flex, order matters if not using order property)
+        // Or append if the flex direction places it correctly (default is row, LTR, so append is correct for image on right)
+        div.appendChild(img); // Append image to the right side
+
+        productsContainer.appendChild(div);
+    }
+}
+
+// Modal Close Logic
+function closeModal() {
+    modalOverlay.style.display = 'none';
+    modalImage.src = ''; // Clear image src
+    modalImage.style.backgroundColor = ''; // Clear potential fallback color
+}
+
+modalClose.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (event) => {
+    // Close only if clicking the overlay itself, not the content inside
+    if (event.target === modalOverlay) {
+        closeModal();
+    }
+});
+
+
+// Initial fetch when the script loads
+fetchPOSData();
+</script>
+</body>
+</html>
