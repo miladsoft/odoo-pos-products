@@ -393,7 +393,14 @@ async function fetchPOSData() {
         // Render categories and initially all products
         // Loading indicators will be removed inside these functions
         renderCategories(allCategories);
-        filterAndRenderProducts('all'); // Initially show all products
+        
+        // Show products from first category instead of 'all'
+        if (allCategories && allCategories.length > 0) {
+            filterAndRenderProducts(allCategories[0].id);
+        } else {
+            // Fallback if no categories exist
+            filterAndRenderProducts('all');
+        }
 
     } catch (error) {
         console.error('Failed to fetch or process POS data:', error);
@@ -456,16 +463,7 @@ function renderCategories(categories) {
     categoriesContainer.innerHTML = ''; // Clear loading animation/content
     categoriesContainer.classList.remove('loading-indicator'); // Remove loading class
 
-    // Add "All" category item in English with an emoji
-    const allDiv = document.createElement('div');
-    allDiv.className = 'category-item';
-    allDiv.innerHTML = `
-        <img src="/all.svg" alt="All" loading="lazy" onerror="handleImageError(this, 'All')">
-        <div>⭐ All</div>
-    `;
-    allDiv.dataset.categoryId = 'all'; // Use data attribute
-    allDiv.addEventListener('click', () => filterAndRenderProducts('all'));
-    categoriesContainer.appendChild(allDiv);
+    // All category functionality is removed as per request
 
     if (categories.length === 0 && categoriesContainer.children.length === 1) { // Only "All" exists
          // Add emoji to "not found" message
@@ -496,16 +494,11 @@ function filterAndRenderProducts(categoryId) {
 
     // Update the selected category title with an emoji
     if (selectedCategoryTitle) {
-        if (categoryId === 'all') {
-            selectedCategoryTitle.textContent = '🍽️ All Products'; // Add plate emoji
-        } else {
-            const selectedCat = allCategories.find(cat => cat.id == categoryId); // Use == for potential type difference
-            selectedCategoryTitle.textContent = selectedCat ? `🍽️ ${selectedCat.name}` : '🍽️ Products'; // Add plate emoji
-        }
-    }
-
-    let filteredProducts = [];
+        const selectedCat = allCategories.find(cat => cat.id == categoryId); // Use == for potential type difference
+        selectedCategoryTitle.textContent = selectedCat ? `🍽️ ${selectedCat.name}` : '🍽️ Products'; // Add plate emoji
+    }    let filteredProducts = [];
     if (categoryId === 'all') {
+        // For 'all' category, just show all products (should be only in fallback case)
         filteredProducts = allProducts;
     } else {
         // Filter products: check if product's pos_category_ids includes the selected categoryId
